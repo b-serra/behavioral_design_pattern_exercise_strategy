@@ -11,52 +11,40 @@ class LineItem:
 
 
 class PricingStrategy(ABC):
-    @abstractmethod
-    def apply(self, subtotal: float, items: list[LineItem]) -> float:
-        """Return the final total given a subtotal and cart items."""
-        raise NotImplementedError
+    # TODO: Define the common interface for all pricing strategies.
+    # This should include a method that takes pricing parameters and returns a calculated value.
+    pass
 
 
 class NoDiscount(PricingStrategy):
-    def apply(self, subtotal: float, items: list[LineItem]) -> float:
-        return round(subtotal, 2)
+    # TODO: Implement a strategy that returns the original value without changes
+    pass
 
 
 class PercentageDiscount(PricingStrategy):
     def __init__(self, percent: float) -> None:
-        assert 0 <= percent <= 100, "percent must be between 0 and 100"
-        self.percent = percent
+        # TODO: Store the percentage value and validate it's in the correct range
+        pass
 
-    def apply(self, subtotal: float, items: list[LineItem]) -> float:
-        discount = subtotal * (self.percent / 100.0)
-        return round(subtotal - discount, 2)
+    # TODO: Implement the main calculation method that reduces the input by a percentage
 
 
 class BulkItemDiscount(PricingStrategy):
     """If any single item's quantity >= threshold, apply a per-item discount for that SKU."""
     def __init__(self, sku: str, threshold: int, per_item_off: float) -> None:
-        self.sku = sku
-        self.threshold = threshold
-        self.per_item_off = per_item_off
+        # TODO: Store the parameters needed to identify items and calculate reductions
+        pass
 
-    def apply(self, subtotal: float, items: list[LineItem]) -> float:
-        total = subtotal
-        for it in items:
-            if it.sku == self.sku and it.qty >= self.threshold:
-                total -= self.per_item_off * it.qty
-        return round(max(total, 0.0), 2)
+    # TODO: Implement logic to iterate through items and apply reductions based on quantity thresholds
 
 
 class CompositeStrategy(PricingStrategy):
     """Compose multiple strategies; apply in order."""
     def __init__(self, strategies: list[PricingStrategy]) -> None:
-        self.strategies = strategies
+        # TODO: Store the collection of strategies to be applied sequentially
+        pass
 
-    def apply(self, subtotal: float, items: list[LineItem]) -> float:
-        total = subtotal
-        for strat in self.strategies:
-            total = strat.apply(total, items)
-        return round(total, 2)
+    # TODO: Implement method that applies each strategy in sequence, using the output of one as input to the next
 
 
 def compute_subtotal(items: list[LineItem]) -> float:
