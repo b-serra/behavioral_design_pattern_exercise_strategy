@@ -1,10 +1,10 @@
 from __future__ import annotations
-from domain.pricing import PricingStrategy, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy
+from domain.pricing import PricingStrategy, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy, BuyXGetYFreeDiscount
 
 
 def choose_strategy(kind: str, **kwargs) -> PricingStrategy:
     # TODO: Implement strategy selection logic based on the 'kind' parameter
-    # Should support: "none", "percent", "bulk", "composite"
+    # Should support: "none", "percent", "bulk", "composite", "buyxgetyfree"
     # Each strategy type needs different parameters from **kwargs
     # Return the appropriate strategy instance or raise an error for unknown types
     kind = kind.lower()
@@ -30,5 +30,11 @@ def choose_strategy(kind: str, **kwargs) -> PricingStrategy:
                 per_item_off=kwargs["per_item_off"]
             ))
         return CompositeStrategy(strategies)
+    elif kind == "buyxgetyfree":
+        return BuyXGetYFreeDiscount(
+            sku=kwargs["sku"],
+            buy_x=kwargs["buy_x"],
+            get_y=kwargs["get_y"]
+        )
     else:
         raise ValueError(f"Unknown pricing strategy: {kind}")

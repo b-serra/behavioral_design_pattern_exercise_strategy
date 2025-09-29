@@ -65,5 +65,33 @@ class CompositeStrategy(PricingStrategy):
         return amount
 
 
+# New creative pricing strategy: Buy X Get Y Free
+class BuyXGetYFreeDiscount(PricingStrategy):
+    """
+    For a given SKU, for every X items bought, Y items are free (the cheapest ones).
+    Example: Buy 2 get 1 free (X=2, Y=1)
+    """
+    def __init__(self, sku: str, buy_x: int, get_y: int):
+        self.sku = sku
+        self.buy_x = buy_x
+        self.get_y = get_y
+
+    def apply(self, amount: float, items: list[LineItem]) -> float:
+        for item in items:
+            if item.sku == self.sku and item.qty >= self.buy_x:
+                # Calculate how many free items
+                group_size = self.buy_x + self.get_y
+                num_groups = item.qty // group_size
+                free_items = num_groups * self.get_y
+                # If there are leftover items that could form another partial group
+                leftover = item.qty % group_size
+                # If leftover is enough to get more free items
+                if leftover > self.buy_x:
+                    free_items += leftover - self.buy_x
+                discount = free_items * item.unit_price
+                return amount - discount
+        return amount
+
+
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
