@@ -1,5 +1,6 @@
 import pytest
 from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy
+from domain.pricing import BuyXGetYFree
 
 
 def sample_items():
@@ -38,3 +39,24 @@ def test_composite_applies_in_order():
     # First 10% off => 31.5, then bulk: - (5 * 0.5) = -2.5 => 29.0
     comp = CompositeStrategy([PercentageDiscount(10), BulkItemDiscount("B", 5, 0.5)])
     assert comp.apply(subtotal, items) == 29.0
+
+
+def test_buy_x_get_y_free_single_group():
+    items = [
+        LineItem("C", qty=3, unit_price=5.0),  # 15
+    ]
+    subtotal = compute_subtotal(items)
+    # Buy 2 get 1 free on C => one free item => discount 5.0 => total 10.0
+    strat = BuyXGetYFree(sku="C", x=2, y=1)
+    assert strat.apply(subtotal, items) == 10.0
+
+
+def test_buy_x_get_y_free_multiple_groups_and_remainder():
+    items = [
+        LineItem("C", qty=7, unit_price=2.0),  # 14
+    ]
+    subtotal = compute_subtotal(items)
+    # Buy 2 get 1 free => group size 3, groups = 7 // 3 = 2 => free_items = 2*1 = 2
+    # discount = 2 * 2.0 = 4.0 => total = 10.0
+    strat = BuyXGetYFree(sku="C", x=2, y=1)
+    assert strat.apply(subtotal, items) == 10.0

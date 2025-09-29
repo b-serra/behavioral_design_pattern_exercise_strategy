@@ -61,3 +61,28 @@ class CompositeStrategy(PricingStrategy):
 
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
+
+
+class BuyXGetYFree(PricingStrategy):
+    """For a given sku, for every group of (x+y) items, y items are free.
+
+    Example: Buy 2 Get 1 Free => x=2, y=1. If qty=7, groups=7 // (2+1)=2 => free_items=2*1=2
+    Discount = free_items * unit_price_for_sku
+    """
+    def __init__(self, sku: str, x: int, y: int) -> None:
+        assert x >= 0 and y >= 0, "x and y must be non-negative"
+        assert x + y > 0, "x+y must be greater than 0"
+        self.sku = sku
+        self.x = int(x)
+        self.y = int(y)
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        total = subtotal
+        for it in items:
+            if it.sku == self.sku and it.qty > 0 and self.y > 0:
+                group_size = self.x + self.y
+                groups = it.qty // group_size
+                free_items = groups * self.y
+                discount = free_items * it.unit_price
+                total -= discount
+        return round(max(total, 0.0), 2)
