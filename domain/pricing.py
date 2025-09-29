@@ -47,6 +47,33 @@ class BulkItemDiscount(PricingStrategy):
         return round(max(total, 0.0), 2)
 
 
+class TieredPricingStrategy(PricingStrategy):
+    """Apply different discount percentages based on cart value tiers."""
+    def __init__(self, tiers: list[tuple[float, float]]) -> None:
+        """
+        tiers: list of (threshold, discount_percent) pairs.
+        Discount applies to the entire subtotal when threshold is met.
+        Tiers should be in ascending order of thresholds.
+        """
+        assert tiers, "At least one tier must be provided"
+        for threshold, percent in tiers:
+            assert threshold >= 0, "threshold must be non-negative"
+            assert 0 <= percent <= 100, "percent must be between 0 and 100"
+        
+        # Sort tiers by threshold to ensure correct order
+        self.tiers = sorted(tiers, key=lambda x: x[0])
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        # Find the highest tier that applies
+        applicable_discount = 0.0
+        for threshold, percent in self.tiers:
+            if subtotal >= threshold:
+                applicable_discount = percent
+        
+        discount = subtotal * (applicable_discount / 100.0)
+        return round(subtotal - discount, 2)
+
+
 class CompositeStrategy(PricingStrategy):
     """Compose multiple strategies; apply in order."""
     def __init__(self, strategies: list[PricingStrategy]) -> None:
