@@ -1,5 +1,5 @@
 import pytest
-from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy
+from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy, BuyXGetYFreeDiscount
 
 
 def sample_items():
@@ -38,3 +38,33 @@ def test_composite_applies_in_order():
     # First 10% off => 31.5, then bulk: - (5 * 0.5) = -2.5 => 29.0
     comp = CompositeStrategy([PercentageDiscount(10), BulkItemDiscount("B", 5, 0.5)])
     assert comp.apply(subtotal, items) == 29.0
+
+
+def test_buy_x_get_y_free_discount():
+    # Test "Buy 2, Get 1 Free" on product A
+    items = [
+        LineItem("A", qty=6, unit_price=10.0),  # 6 items at $10 each = $60
+        LineItem("B", qty=2, unit_price=5.0),   # 2 items at $5 each = $10
+    ]  # subtotal = 70
+    
+    subtotal = compute_subtotal(items)
+    
+    # Buy 2 Get 1 Free on product A
+    # 6 items = 2 complete sets of (2 buy + 1 free)
+    # So we get 2 free items worth $20 off
+    strategy = BuyXGetYFreeDiscount(sku="A", buy_quantity=2, free_quantity=1)
+    total = strategy.apply(subtotal, items)
+    
+    assert total == 50.0  # 70 - 20 = 50
+
+
+def test_buy_x_get_y_free_no_complete_sets():
+    # Test when we don't have enough items for a complete set
+    items = [LineItem("A", qty=2, unit_price=10.0)]  # Only 2 items
+    subtotal = compute_subtotal(items)  # 20
+    
+    # Buy 3 Get 1 Free - we only have 2 items, so no discount applies
+    strategy = BuyXGetYFreeDiscount(sku="A", buy_quantity=3, free_quantity=1)
+    total = strategy.apply(subtotal, items)
+    
+    assert total == 20.0  # No discount applied
