@@ -1,5 +1,5 @@
 import pytest
-from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy
+from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy, SeasonalDiscount, RegionalDiscount
 
 
 def sample_items():
@@ -38,3 +38,28 @@ def test_composite_applies_in_order():
     # First 10% off => 31.5, then bulk: - (5 * 0.5) = -2.5 => 29.0
     comp = CompositeStrategy([PercentageDiscount(10), BulkItemDiscount("B", 5, 0.5)])
     assert comp.apply(subtotal, items) == 29.0
+
+@pytest.mark.parametrize("season,expected", [
+    ("winter", 17.50),  # 50% off 35.0
+    ("summer", 35.00),  # no discount
+])
+def test_seasonal_discount(season, expected):
+    items = sample_items()
+    subtotal = compute_subtotal(items)
+    strat = SeasonalDiscount(season)
+    total = strat.apply(subtotal, items)
+    assert total == expected
+
+
+@pytest.mark.parametrize("region,expected", [
+    ("europe", 15.00),     # 35 - 20
+    ("americas", -5.00),   # 35 - 40 → floored to 0.0
+    ("asia", 35.00),       # no discount
+])
+def test_regional_discount(region, expected):
+    items = sample_items()
+    subtotal = compute_subtotal(items)
+    strat = RegionalDiscount(region)
+    total = strat.apply(subtotal, items)
+    # floor at zero if negative
+    assert total == max(expected, 0.0)

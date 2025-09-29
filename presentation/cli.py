@@ -12,22 +12,45 @@ def parse_items(items_json: str) -> list[LineItem]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Pricing CLI (Strategy Pattern)")
-    parser.add_argument("--items", type=str, required=True,
-                        help='JSON list of items: [{"sku":"A","qty":2,"unit_price":10.0}, ...]')
-    parser.add_argument("--strategy", type=str, default="none",
-                        choices=["none", "percent", "bulk", "composite"],
-                        help="Strategy kind")
-    parser.add_argument("--percent", type=float, default=0.0, help="Percent discount for 'percent' or 'composite'")
+    parser.add_argument(
+        "--items", type=str, required=True,
+        help='JSON list of items: [{"sku":"A","qty":2,"unit_price":10.0}, ...]'
+    )
+    parser.add_argument(
+        "--strategy", type=str, default="none",
+        choices=["none", "percent", "bulk", "seasonal", "regional", "composite"],
+        help="Strategy kind"
+    )
+
+    # Percent-based discounts
+    parser.add_argument("--percent", type=float, default=0.0,
+                        help="Percent discount for 'percent' or 'composite'")
+
+    # Bulk discounts
     parser.add_argument("--sku", type=str, default="", help="SKU for bulk/composite")
     parser.add_argument("--threshold", type=int, default=0, help="Qty threshold for bulk/composite")
     parser.add_argument("--per-item-off", type=float, default=0.0, dest="per_item_off",
                         help="Per item discount for bulk/composite")
+
+    # Seasonal discounts
+    parser.add_argument("--season", type=str, default="", help="Season name (e.g. winter) for 'seasonal'")
+
+    # Regional discounts
+    parser.add_argument("--region", type=str, default="", help="Region name (europe, americas, etc.) for 'regional'")
+
     args = parser.parse_args()
 
     items = parse_items(args.items)
     subtotal = compute_subtotal(items)
-    strat = choose_strategy(args.strategy, percent=args.percent, sku=args.sku,
-                            threshold=args.threshold, per_item_off=args.per_item_off)
+    strat = choose_strategy(
+        args.strategy,
+        percent=args.percent,
+        sku=args.sku,
+        threshold=args.threshold,
+        per_item_off=args.per_item_off,
+        season=args.season,
+        region=args.region,
+    )
     total = strat.apply(subtotal, items)
 
     print(f"Subtotal: {subtotal:.2f}")

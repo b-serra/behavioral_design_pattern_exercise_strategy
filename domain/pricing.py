@@ -59,5 +59,33 @@ class CompositeStrategy(PricingStrategy):
         return round(total, 2)
 
 
+class SeasonalDiscount(PricingStrategy):
+    """Apply a seasonal discount (winter → 50% off)."""
+    def __init__(self, season: str) -> None:
+        self.season = season.lower()
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        if self.season == "winter":
+            discount = subtotal * 0.50
+        else:
+            discount = 0.0
+        return round(subtotal - discount, 2)
+
+
+class RegionalDiscount(PricingStrategy):
+    """Apply a regional flat discount."""
+    def __init__(self, region: str) -> None:
+        self.region = region.lower()
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        if self.region == "europe":
+            amount = 20.0
+        elif self.region == "americas":
+            amount = 40.0
+        else:
+            amount = 0.0
+        return round(max(subtotal - amount, 0.0), 2)
+
+
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
