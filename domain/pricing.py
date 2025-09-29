@@ -52,6 +52,44 @@ class BulkItemDiscount(PricingStrategy):
         return total
 
 
+class TieredDiscount(PricingStrategy):
+    """Apply different discount percentages based on total amount tiers."""
+    def __init__(self, tiers: list[tuple[float, float]]) -> None:
+        """
+        Initialize with a list of (threshold, discount_percent) tuples.
+        Example: [(50, 5), (100, 10), (200, 15)] means:
+        - 5% off for totals >= $50
+        - 10% off for totals >= $100  
+        - 15% off for totals >= $200
+        """
+        if not tiers:
+            raise ValueError("At least one tier must be provided")
+        
+        # Sort tiers by threshold in ascending order
+        self.tiers = sorted(tiers, key=lambda x: x[0])
+        
+        # Validate tiers
+        for threshold, discount in self.tiers:
+            if threshold < 0:
+                raise ValueError("Threshold must be non-negative")
+            if discount < 0 or discount > 100:
+                raise ValueError("Discount percent must be between 0 and 100")
+
+    def apply(self, total: float, items: list[LineItem]) -> float:
+        """Apply the highest applicable tier discount."""
+        applicable_discount = 0.0
+        
+        # Find the highest tier that applies
+        for threshold, discount in self.tiers:
+            if total >= threshold:
+                applicable_discount = discount
+            else:
+                break
+        
+        discount_amount = total * (applicable_discount / 100)
+        return round(total - discount_amount, 2)
+
+
 class CompositeStrategy(PricingStrategy):
     """Compose multiple strategies; apply in order."""
     def __init__(self, strategies: list[PricingStrategy]) -> None:

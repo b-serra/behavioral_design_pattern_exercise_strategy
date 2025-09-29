@@ -1,5 +1,5 @@
 from __future__ import annotations
-from domain.pricing import PricingStrategy, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy
+from domain.pricing import PricingStrategy, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy, TieredDiscount
 
 
 def choose_strategy(kind: str, **kwargs) -> PricingStrategy:
@@ -7,7 +7,7 @@ def choose_strategy(kind: str, **kwargs) -> PricingStrategy:
     Factory function to create pricing strategies based on the kind parameter.
     
     Args:
-        kind: Strategy type ("none", "percent", "bulk", "composite")
+        kind: Strategy type ("none", "percent", "bulk", "tiered", "composite")
         **kwargs: Strategy-specific parameters
         
     Returns:
@@ -36,6 +36,15 @@ def choose_strategy(kind: str, **kwargs) -> PricingStrategy:
             raise ValueError("Per item discount must be greater than 0 for bulk discount strategy")
             
         return BulkItemDiscount(sku, threshold, per_item_off)
+    
+    elif kind == "tiered":
+        # For tiered discount, expect tiers as a list of (threshold, discount) tuples
+        tiers = kwargs.get("tiers", [])
+        if not tiers:
+            # Default tiers if none provided
+            tiers = [(50.0, 5.0), (100.0, 10.0), (200.0, 15.0)]
+        
+        return TieredDiscount(tiers)
     
     elif kind == "composite":
         # For composite strategy, we'll combine percentage and bulk discounts
