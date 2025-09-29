@@ -57,6 +57,20 @@ class CompositeStrategy(PricingStrategy):
         for strat in self.strategies:
             total = strat.apply(total, items)
         return round(total, 2)
+    
+class ThresholdSubtotalDiscount(PricingStrategy):
+    """
+    Applies a fixed discount if the subtotal meets or exceeds a threshold.
+    Example: If subtotal >= 100, subtract 15 from total.
+    """
+    def __init__(self, threshold: float, discount: float) -> None:
+        self.threshold = threshold
+        self.discount = discount
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        if subtotal >= self.threshold:
+            return round(max(subtotal - self.discount, 0.0), 2)
+        return round(subtotal, 2)    
 
 
 def compute_subtotal(items: list[LineItem]) -> float:
