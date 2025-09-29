@@ -54,6 +54,32 @@ class BulkItemDiscount(PricingStrategy):
                 total_discount += item.qty * self.per_item_off
         return round(subtotal - total_discount, 2)
 
+class BuyXGetYFreeDiscount(PricingStrategy):
+    """Buy X items of a specific SKU, get Y items free (pay for X, get X+Y total)"""
+    def __init__(self, sku: str, buy_quantity: int, free_quantity: int) -> None:
+        # Store the parameters for the buy X get Y free offer
+        self.sku = sku
+        self.buy_quantity = buy_quantity
+        self.free_quantity = free_quantity
+        
+        if buy_quantity <= 0 or free_quantity <= 0:
+            raise ValueError("Buy and free quantities must be positive")
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        total_discount = 0.0
+        
+        for item in items:
+            if item.sku == self.sku:
+                # Calculate how many complete "buy X get Y free" sets we have
+                complete_sets = item.qty // (self.buy_quantity + self.free_quantity)
+                
+                # Calculate discount: free items * unit price * number of complete sets
+                free_items_discount = complete_sets * self.free_quantity * item.unit_price
+                total_discount += free_items_discount
+        
+        return round(subtotal - total_discount, 2)
+
+
 class CompositeStrategy(PricingStrategy):
     """Compose multiple strategies; apply in order."""
     def __init__(self, strategies: list[PricingStrategy]) -> None:
