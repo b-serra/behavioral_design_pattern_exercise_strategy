@@ -38,6 +38,23 @@ class BulkItemDiscount(PricingStrategy):
     # TODO: Implement logic to iterate through items and apply reductions based on quantity thresholds
 
 
+
+class BuyOneGetTwoFree(PricingStrategy):
+    """Buy 1 item, get 2 free. Applied per SKU."""
+    def __init__(self, sku: str) -> None:
+        self.sku = sku
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        total = subtotal
+        for item in items:
+            if item.sku == self.sku and item.qty >= 3:
+                every_three_items = item.qty // 3
+                free_items = every_three_items * 2  
+                discount = free_items * item.unit_price
+                total -= discount
+        return round(max(total, 0.0), 2)
+
+
 class CompositeStrategy(PricingStrategy):
     """Compose multiple strategies; apply in order."""
     def __init__(self, strategies: list[PricingStrategy]) -> None:
