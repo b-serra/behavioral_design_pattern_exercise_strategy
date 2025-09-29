@@ -15,10 +15,10 @@ def main() -> None:
     parser.add_argument("--items", type=str, required=True,
                         help='JSON list of items: [{"sku":"A","qty":2,"unit_price":10.0}, ...]')
     parser.add_argument("--strategy", type=str, default="none",
-                        choices=["none", "percent", "bulk", "composite"],
+                        choices=["none", "percent", "bulk", "bogo", "composite"],
                         help="Strategy kind")
     parser.add_argument("--percent", type=float, default=0.0, help="Percent discount for 'percent' or 'composite'")
-    parser.add_argument("--sku", type=str, default="", help="SKU for bulk/composite")
+    parser.add_argument("--sku", type=str, default="", help="SKU for bulk/bogo/composite")
     parser.add_argument("--threshold", type=int, default=0, help="Qty threshold for bulk/composite")
     parser.add_argument("--per-item-off", type=float, default=0.0, dest="per_item_off",
                         help="Per item discount for bulk/composite")

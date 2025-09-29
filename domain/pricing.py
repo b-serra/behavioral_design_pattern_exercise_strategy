@@ -47,6 +47,22 @@ class BulkItemDiscount(PricingStrategy):
         return round(max(total, 0.0), 2)
 
 
+class BuyOneGetOne(PricingStrategy):
+    """Buy One Get One strategy - for every 2 items of specified SKU, get one free."""
+    def __init__(self, sku: str) -> None:
+        self.sku = sku
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        total = subtotal
+        for item in items:
+            if item.sku == self.sku:
+                # For every 2 items, get 1 free
+                free_items = item.qty // 2
+                discount = free_items * item.unit_price
+                total -= discount
+        return round(max(total, 0.0), 2)
+
+
 class CompositeStrategy(PricingStrategy):
     """Compose multiple strategies; apply in order."""
     def __init__(self, strategies: list[PricingStrategy]) -> None:
