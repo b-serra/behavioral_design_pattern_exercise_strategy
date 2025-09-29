@@ -59,5 +59,14 @@ class CompositeStrategy(PricingStrategy):
         return round(total, 2)
 
 
+class FixedAmountDiscount(PricingStrategy):
+    def __init__(self, amount_off: float) -> None:
+        assert amount_off >= 0, "amount_off must be non-negative"
+        self.amount_off = amount_off
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        return round(max(subtotal - self.amount_off, 0.0), 2)
+
+
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
