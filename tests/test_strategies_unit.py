@@ -1,5 +1,5 @@
 import pytest
-from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy
+from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy, ThresholdAmountDiscount
 
 
 def sample_items():
@@ -38,3 +38,10 @@ def test_composite_applies_in_order():
     # First 10% off => 31.5, then bulk: - (5 * 0.5) = -2.5 => 29.0
     comp = CompositeStrategy([PercentageDiscount(10), BulkItemDiscount("B", 5, 0.5)])
     assert comp.apply(subtotal, items) == 29.0
+
+# Tests for the new ThresholdAmountDiscount strategy
+def test_threshold_amount_discount_applies_when_threshold_met():
+    items = sample_items()  # subtotal 35
+    subtotal = compute_subtotal(items)
+    total = ThresholdAmountDiscount(threshold=30, discount=5).apply(subtotal, items)
+    assert total == 30.0  # 35 - 5
