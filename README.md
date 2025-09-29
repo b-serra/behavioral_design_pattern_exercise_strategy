@@ -18,6 +18,7 @@ strategy_app/
 - **NoDiscount** – leaves subtotal unchanged.
 - **PercentageDiscount** – applies a percentage discount to the subtotal.
 - **BulkItemDiscount** – if a particular SKU quantity reaches a threshold, subtract a per-item amount.
+- **TieredDiscount** – applies different discount percentages based on subtotal amount tiers.
 - **CompositeStrategy** – combine multiple strategies and apply them in order.
 
 ## Run CLI
@@ -38,6 +39,15 @@ python -m presentation.cli --items '[{"sku":"A","qty":2,"unit_price":10.0},{"sku
 # Subtotal: 35.00
 # Strategy: bulk
 # Total: 32.50
+```
+
+Tiered strategy (different discounts based on subtotal):
+
+```bash
+python -m presentation.cli --items '[{"sku":"A","qty":10,"unit_price":15.0},{"sku":"B","qty":5,"unit_price":10.0}]' --strategy tiered --tiers "50:5,100:10,200:15"
+# Subtotal: 200.00
+# Strategy: tiered
+# Total: 170.00 (15% discount for >= $200)
 ```
 
 Composite strategy (percent then bulk):
