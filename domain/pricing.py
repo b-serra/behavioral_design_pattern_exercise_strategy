@@ -49,3 +49,9 @@ class CompositeStrategy(PricingStrategy):
 
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
+
+class Robbery(PricingStrategy):
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        # Override apply so customer pays nothing
+        return 0.0
