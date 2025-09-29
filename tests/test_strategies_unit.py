@@ -1,5 +1,5 @@
 import pytest
-from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, CompositeStrategy
+from domain.pricing import LineItem, compute_subtotal, NoDiscount, PercentageDiscount, BulkItemDiscount, TieredPricingStrategy, CompositeStrategy
 
 
 def sample_items():
