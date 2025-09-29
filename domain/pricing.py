@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
+import random
 
 
 @dataclass(frozen=True)
@@ -58,6 +59,17 @@ class CompositeStrategy(PricingStrategy):
             total = strat.apply(total, items)
         return round(total, 2)
 
+
+class LuckyItemDiscount(PricingStrategy):
+    """Randomly selects one item in the cart and makes it free."""
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        if not items:
+            return round(subtotal, 2)
+        lucky_index = random.randint(0, len(items) - 1)
+        lucky_item = items[lucky_index]
+        lucky_item_total = lucky_item.unit_price * lucky_item.qty
+        total = subtotal - lucky_item_total
+        return round(max(total, 0.0), 2)
 
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
