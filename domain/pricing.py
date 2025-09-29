@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
-#hello im sofia
+
 
 @dataclass(frozen=True)
 class LineItem:
@@ -46,6 +46,34 @@ class BulkItemDiscount(PricingStrategy):
             if it.sku == self.sku and it.qty >= self.threshold:
                 total -= self.per_item_off * it.qty
         return round(max(total, 0.0), 2)
+
+
+class BulkDiscount(PricingStrategy):
+    def __init__(self, sku: str, min_qty: int, discount: float):
+        """
+        Initialize the BulkDiscount strategy.
+
+        :param sku: The SKU of the item eligible for the discount.
+        :param min_qty: The minimum quantity required to apply the discount.
+        :param discount: The discount amount per unit (in the same currency as unit_price).
+        """
+        self.sku = sku
+        self.min_qty = min_qty
+        self.discount = discount
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        """
+        Apply the bulk discount to the subtotal if the conditions are met.
+
+        :param subtotal: The current subtotal of the cart.
+        :param items: The list of LineItem objects in the cart.
+        :return: The final total after applying the bulk discount.
+        """
+        discount_total = 0
+        for item in items:
+            if item.sku == self.sku and item.qty >= self.min_qty:
+                discount_total += item.qty * self.discount
+        return round(subtotal - discount_total, 2)
 
 
 class CompositeStrategy(PricingStrategy):
