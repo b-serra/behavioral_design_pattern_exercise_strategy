@@ -40,7 +40,7 @@ def main() -> None:
 
     print(f"Subtotal: {subtotal:.2f}")
     print(f"Strategy: {args.strategy}")
-    print(f"Total: {total:.2f}")
+    # TODO: Calculate and print the final total
 
 
 if __name__ == "__main__":

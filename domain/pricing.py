@@ -22,8 +22,8 @@ class PricingStrategy(ABC):
 
 
 class NoDiscount(PricingStrategy):
-    def apply(self, subtotal: float, items: list[LineItem]) -> float:
-        return round(subtotal, 2)
+    # TODO: Implement a strategy that returns the original value without changes
+    pass
 
 
 class PercentageDiscount(PricingStrategy):
@@ -35,7 +35,6 @@ class PercentageDiscount(PricingStrategy):
     def apply(self, subtotal: float, items: list[LineItem]) -> float:
         discount = subtotal * (self._percent / 100.0)
         return round(subtotal - discount, 2)
-
 
 class BulkItemDiscount(PricingStrategy):
     """If any single item's quantity >= threshold, apply a per-item discount for that SKU."""

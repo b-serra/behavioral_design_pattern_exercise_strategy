@@ -1,4 +1,4 @@
-# Pricing Example (Strategy Pattern in Python)
+# Pricing Engine - Strategy Design Pattern in Python
 
 This project demonstrates the **Strategy** behavioral pattern via a small pricing engine.
 You can switch pricing algorithms (strategies) at runtime without changing the client code.
