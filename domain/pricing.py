@@ -47,6 +47,20 @@ class BulkItemDiscount(PricingStrategy):
         return round(max(total, 0.0), 2)
 
 
+class BuyOneGetOneFree(PricingStrategy):
+    """For a given SKU, every second item is free (Buy 1 Get 1 Free)."""
+    def __init__(self, sku: str) -> None:
+        self.sku = sku
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        total = subtotal
+        for it in items:
+            if it.sku == self.sku and it.qty > 1:
+                free_items = it.qty // 2
+                total -= free_items * it.unit_price
+        return round(max(total, 0.0), 2)
+
+
 class CompositeStrategy(PricingStrategy):
     """Compose multiple strategies; apply in order."""
     def __init__(self, strategies: list[PricingStrategy]) -> None:
@@ -61,3 +75,26 @@ class CompositeStrategy(PricingStrategy):
 
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
+
+
+# --- Example usage ---
+if __name__ == "__main__":
+    cart = [
+        LineItem("A100", 3, 10.0),  # SKU eligible for BOGO
+        LineItem("B200", 2, 5.0),
+    ]
+
+    subtotal = compute_subtotal(cart)
+    print("Subtotal:", subtotal)
+
+    strategy = BuyOneGetOneFree("A100")
+    total = strategy.apply(subtotal, cart)
+    print("After BOGO:", total)
+
+    # Or combine strategies
+    combo = CompositeStrategy([
+        BuyOneGetOneFree("A100"),
+        PercentageDiscount(10),
+    ])
+    print("After BOGO + 10% off:", combo.apply(subtotal, cart))
+
