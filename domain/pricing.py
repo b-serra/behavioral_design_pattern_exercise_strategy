@@ -74,5 +74,28 @@ class ThresholdSubtotalDiscount(PricingStrategy):
         return round(subtotal, 2)
 
 
+class BuyXGetYFree(PricingStrategy):
+    """For a specific SKU, for every (buy_x + get_y_free) items, get_y_free are free."""
+    def __init__(self, sku: str, buy_x: int, get_y_free: int) -> None:
+        if buy_x <= 0 or get_y_free <= 0:
+            raise ValueError("buy_x and get_y_free must be positive integers")
+        self.sku = sku
+        self.buy_x = buy_x
+        self.get_y_free = get_y_free
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        discount = 0.0
+        for it in items:
+            if it.sku != self.sku:
+                continue
+            group_size = self.buy_x + self.get_y_free
+            if group_size <= 0:
+                continue
+            num_groups = it.qty // group_size
+            free_items = num_groups * self.get_y_free
+            discount += free_items * it.unit_price
+        return round(subtotal - discount, 2)
+
+
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)

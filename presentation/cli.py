@@ -15,7 +15,7 @@ def main() -> None:
     parser.add_argument("--items", type=str, required=True,
                         help='JSON list of items: [{"sku":"A","qty":2,"unit_price":10.0}, ...]')
     parser.add_argument("--strategy", type=str, default="none",
-                        choices=["none", "percent", "bulk", "composite", "threshold_subtotal"],
+                        choices=["none", "percent", "bulk", "composite", "threshold_subtotal", "buy_x_get_y"],
                         help="Strategy kind")
     parser.add_argument("--percent", type=float, default=0.0, help="Percent discount for 'percent' or 'composite'")
     parser.add_argument("--sku", type=str, default="", help="SKU for bulk/composite")
@@ -26,6 +26,10 @@ def main() -> None:
                         help="Subtotal threshold for new threshold_subtotal strategy")
     parser.add_argument("--off-amount", type=float, default=0.0, dest="off_amount",
                         help="Fixed amount off when threshold is met for threshold_subtotal")
+    parser.add_argument("--buy-x", type=int, default=0, dest="buy_x",
+                        help="Buy X items for buy_x_get_y strategy")
+    parser.add_argument("--get-y", type=int, default=0, dest="get_y",
+                        help="Get Y items free for buy_x_get_y strategy")
     args = parser.parse_args()
 
     items = parse_items(args.items)
@@ -39,6 +43,8 @@ def main() -> None:
         per_item_off=args.per_item_off,
         threshold_total=args.threshold_total,
         off_amount=args.off_amount,
+        buy_x=args.buy_x,
+        get_y=args.get_y,
     )
     total = strategy.apply(subtotal, items)
     
