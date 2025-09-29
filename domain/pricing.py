@@ -49,3 +49,13 @@ class CompositeStrategy(PricingStrategy):
 
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
+
+class FixedAmountDiscount(PricingStrategy):
+    """Subtracts a fixed amount from the total price."""
+    def __init__(self, amount: float) -> None:
+        if amount < 0:
+            raise ValueError("Discount amount must be non-negative")
+        self.amount = amount
+
+    def apply(self, items: list[LineItem], current_total: float) -> float:
+        return max(0.0, round(current_total - self.amount, 2))
