@@ -34,6 +34,7 @@ class PercentageDiscount(PricingStrategy):
 
 class BulkItemDiscount(PricingStrategy):
     """If any single item's quantity >= threshold, apply a per-item discount for that SKU."""
+
     def __init__(self, sku: str, threshold: int, per_item_off: float) -> None:
         self.sku = sku
         self.threshold = threshold
@@ -49,6 +50,7 @@ class BulkItemDiscount(PricingStrategy):
 
 class CompositeStrategy(PricingStrategy):
     """Compose multiple strategies; apply in order."""
+
     def __init__(self, strategies: list[PricingStrategy]) -> None:
         self.strategies = strategies
 
@@ -61,3 +63,14 @@ class CompositeStrategy(PricingStrategy):
 
 def compute_subtotal(items: list[LineItem]) -> float:
     return round(sum(it.unit_price * it.qty for it in items), 2)
+
+
+class FixedAmountDiscount(PricingStrategy):
+    """Subtract a fixed amount from the subtotal, but not below zero."""
+
+    def __init__(self, amount: float) -> None:
+        assert amount >= 0, "Discount amount must be non-negative"
+        self.amount = amount
+
+    def apply(self, subtotal: float, items: list[LineItem]) -> float:
+        return round(max(subtotal - self.amount, 0.0), 2)
